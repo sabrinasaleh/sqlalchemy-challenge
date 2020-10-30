@@ -42,20 +42,19 @@ def main():
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     """Return a JSON representation of a dictionary where date is the key and precipitation is the value"""
-#     print("Received precipitation api request.")
+    # print("Received precipitation api request.")
 
     # Find the latest date in the dataset
     latest_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
     latest_date_string = latest_date_query[0][0]
-    latest_date = dt.datetime.strptime(latest_date_string, "%Y-%m-%d")
+    latest_date = dt.datetime.strptime(latest_date_string, "%Y-%m-%d")    
 
     # Calculate the date 1 year ago from the last data point in the database
     year_ago_date = latest_date - dt.timedelta(days=365)
 
     # Perform a query to retrieve the last 12 months of precipitation data
-    year_prcp_data = session.query(func.strftime("%Y-%m-%d", Measurement.date), Measurement.prcp)
-    .filter(func.strftime("%Y-%m-%d", Measurement.date) >= year_ago_date)
-    .all()
+    year_prcp_data = session.query(func.strftime("%Y-%m-%d", Measurement.date), Measurement.prcp).\
+    filter(func.strftime("%Y-%m-%d", Measurement.date) >= year_ago_date).all()
     
     # Prepare the dictionary with date as the key and prcp as the value
     results_dict = {}
@@ -68,7 +67,7 @@ def precipitation():
 def stations():
     """Return a JSON list of stations from the dataset."""
 
-#     print("Received station api request.")
+    # print("Received station api request.")
 
     # Conduct query for the stations
     stations_data = session.query(Station).all()
@@ -91,7 +90,7 @@ def stations():
 def tobs():
     """Return a JSON list of temperature observations in the most active station for the previous year."""
 
-#     print("Received tobs api request for the most active station.")
+    # print("Received tobs api request for the most active station.")
 
      # Find the latest date in the dataset
     latest_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
@@ -102,19 +101,16 @@ def tobs():
     year_ago_date = latest_date - dt.timedelta(days=365)
 
     # Query station names and their observation counts sorted descending and select most active station
-    station_active = session.query(Measurement.station, func.count(Measurement.station))
-    .group_by(Measurement.station)
-    .order_by(func.count(Measurement.station).desc())
-    .all()
+    station_active = session.query(Measurement.station, func.count(Measurement.station)).\
+    group_by(Measurement.station).order_by(func.count(Measurement.station).desc()).all()
     
     station_active_most = station_active[0][0]
     print(station_active_most)
     
     # Query the dates and temperature observations of the most active station for the last year of data
-    active_tobs_data = session.query(func.strftime("%Y-%m-%d", Measurement.date), Measurement.tobs)
-    .filter(Measurement.station == station_active_most)
-    .filter(func.strftime("%Y-%m-%d", Measurement.date) >= year_ago_date)
-    .all()           
+    active_tobs_data = session.query(func.strftime("%Y-%m-%d", Measurement.date), Measurement.tobs).\
+    filter(Measurement.station == station_active_most).\
+    filter(func.strftime("%Y-%m-%d", Measurement.date) >= year_ago_date).all()           
                 
     # Create a JSON list of tobs for the most active station
     tobs_list = []
@@ -128,15 +124,24 @@ def tobs():
     return jsonify(tobs_list)
 
 # if error check with this:
-#     tobs_list = []
-#     for result in active_tobs_data:
-#         tobs_dict = {}
-#         tobs_dict["date"] = result.date
-#         tobs_dict["station"] = result.station
-#         tobs_dict["tobs"] = result.tobs
-#         tobs_list.append(tobs_dict)
+    # tobs_list = []
+    # for result in active_tobs_data:
+    #     tobs_dict = {}
+    #     tobs_dict["date"] = result.date
+    #     tobs_dict["station"] = result.station
+    #     tobs_dict["tobs"] = result.tobs
+    #     tobs_list.append(tobs_dict)
 
-#     return jsonify(tobs_list)
+    # return jsonify(tobs_list)
+
+# Doug's Code:
+# @app.route("/api/v1.0/stations")
+# def stations():
+#     """Return a list of stations."""
+#     results = session.query(Station.station).all()
+#     # Unravel results into a 1D array and convert to a list
+#     stations = list(np.ravel(results))
+#     return jsonify(stations)
 
 
 
