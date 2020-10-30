@@ -143,6 +143,65 @@ def tobs():
 #     stations = list(np.ravel(results))
 #     return jsonify(stations)
 
+#Create a function that gets minimum, average, and maximum temperatures for a range of dates
+# This function called `calc_temps` will accept start date and end date in the format '%Y-%m-%d' 
+# and return the minimum, average, and maximum temperatures for that range of dates
+def calc_temps(start_date, end_date):
+    """TMIN, TAVG, and TMAX for a list of dates.
+    
+    Args:
+        start_date (string): A date string in the format %Y-%m-%d
+        end_date (string): A date string in the format %Y-%m-%d
+        
+    Returns:
+        TMIN, TAVE, and TMAX
+    """
+    
+    return session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
+
+@app.route("/api/v1.0/<start>")
+def start(start):
+    """Return a JSON list of the minimum, average, and maximum temperatures for a given start date."""
+
+#    # print("Received start date api request.")
+
+    # Find the latest date in the dataset
+    latest_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
+    latest_date_string = latest_date_query[0][0]
+
+    # Get the temperatures
+    temps = calc_temps(start, latest_date_string)
+
+    # Create a JSON list for start_date
+    return_list = []
+    date_dict = {"start_date": start, "end_date": latest_date_string}
+    return_list.append(date_dict)
+    return_list.append({"Observation": "TMIN", "Temperature": temps[0][0]})
+    return_list.append({"Observation": "TAVG", "Temperature": temps[0][1]})
+    return_list.append({"Observation": "TMAX", "Temperature": temps[0][2]})
+
+    return jsonify(return_list)
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_end(start, end):
+    """Return a JSON list of the minimum, average, and maximum temperatures for a given start-end range."""
+
+#    # print("Received start date and end date api request.")
+
+    # Get the temperatures
+    temps = calc_temps(start, end)
+
+    #create a list
+    return_list = []
+    date_dict = {"start_date": start, "end_date": end}
+    return_list.append(date_dict)
+    return_list.append({"Observation": "TMIN", "Temperature": temps[0][0]})
+    return_list.append({"Observation": "TAVG", "Temperature": temps[0][1]})
+    return_list.append({"Observation": 'TMAX', "Temperature": temps[0][2]})
+
+    return jsonify(return_list)
+
 
 
 if __name__ == "__main__":
