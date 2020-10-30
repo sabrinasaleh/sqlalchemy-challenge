@@ -30,6 +30,7 @@ app = Flask(__name__)
 @app.route("/")
 def main():
     """List all routes that are available."""
+    
     return (
         f"List of Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
