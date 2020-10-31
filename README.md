@@ -124,7 +124,7 @@ Now that you have completed your initial analysis, design a Flask API based on t
 
  ![temperature_minor](Images/sabrina_temperature_minor.png)
  
-### Daily Rainfall Average
+### Bonus: Daily Rainfall Average
 
 * Calculate the rainfall per weather station using the previous year's matching dates.
 
